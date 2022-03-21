@@ -1,0 +1,33 @@
+name: 'Container Build and Publish'
+description: 'Builds and pushes container to AWS ECR registry'
+inputs:
+  CONTAINER_URI:
+    required: true
+    type: string
+
+  CONTAINER_TAG:
+    required: true
+    type: string
+
+  CONTAINER_AWS_REGION:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: ${{ inputs.CONTAINER_AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Container Build
+      run: docker build -t ${{ inputs.CONTAINER_URI }}:${{ inputs.CONTAINER_TAG }} .
+      shell: bash
+
+    - name: Container Push
+      run: docker push ${{ inputs.CONTAINER_URI }}:${{ inputs.CONTAINER_TAG }}
+      shell: bash
